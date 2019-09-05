@@ -126,15 +126,15 @@
 
 		<variable name="inhibitor" units="dimensionless" ID="1">
 			<physical_parameter_set>
-				<diffusion_coefficient units="micron^2/min">0.0</diffusion_coefficient>
-				<decay_rate units="1/min">0.0</decay_rate> <!-- 1 for cells  -->
+				<diffusion_coefficient units="micron^2/min">100000.0</diffusion_coefficient>
+				<decay_rate units="1/min">0.00001</decay_rate> <!-- 1 for cells  -->
 			</physical_parameter_set>
 			<initial_condition units="dimensionless">0</initial_condition>
-			<Dirichlet_boundary_condition units="dimensionless" enabled="false">0.</Dirichlet_boundary_condition>
+			<Dirichlet_boundary_condition units="dimensionless" enabled="true">10.</Dirichlet_boundary_condition>
 		</variable>
 
 		<options>
-			<calculate_gradients>false</calculate_gradients>
+			<calculate_gradients>true</calculate_gradients>
 			<track_internalized_substrates_in_each_agent>true</track_internalized_substrates_in_each_agent>
 		</options>
 	</microenvironment_setup>
