@@ -66,27 +66,28 @@
 */
 
 #include "../core/PhysiCell.h"
-#include "../modules/PhysiCell_standard_modules.h" 
+#include "../modules/PhysiCell_standard_modules.h"
 
-using namespace BioFVM; 
+using namespace BioFVM;
 using namespace PhysiCell;
 
-void tumor_cell_phenotype_with_oncoprotein( Cell* pCell, Phenotype& phenotype, double dt ); 
+void tumor_cell_phenotype_with_oncoprotein( Cell* pCell, Phenotype& phenotype, double dt );
 
 // any additional cell types (beyond cell_defaults)
 
-extern Cell_Definition motile_cell; 
+extern Cell_Definition motile_cell;
 
-// custom cell phenotype functions could go here 
-
-// setup functions to help us along 
+// custom cell phenotype functions could go here
+void custom_probability_update(Cell* pCell, Phenotype& phenotype, double dt);
+void custom_probability_update2(Cell* pCell, Phenotype& phenotype, double dt);
+// setup functions to help us along
 
 void create_cell_types( void );
-void setup_tissue( void ); 
+void setup_tissue( void );
 
-// set up the BioFVM microenvironment 
-void setup_microenvironment( void ); 
+// set up the BioFVM microenvironment
+void setup_microenvironment( void );
 
-// custom pathology coloring function 
+// custom pathology coloring function
 
 std::vector<std::string> my_coloring_function( Cell* );
