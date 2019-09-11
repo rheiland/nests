@@ -1,5 +1,5 @@
 VERSION := $(shell grep . VERSION.txt | cut -f1 -d:)
-PROGRAM_NAME := nests
+PROGRAM_NAME := nevus
 
 CC := g++
 
