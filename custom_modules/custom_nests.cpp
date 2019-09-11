@@ -100,20 +100,27 @@ void create_cell_types( void )
 	cell_defaults.phenotype.death.rates[apoptosis_model_index] = 0.0;
 	cell_defaults.phenotype.death.rates[necrosis_model_index] = 0.0;
 
-	// Turn of Cell Cycling
+	// Turn off Cell Cycling
 	int cycle_start_index = live.find_phase_index( PhysiCell_constants::live );
 	int cycle_end_index = live.find_phase_index( PhysiCell_constants::live );
 	cell_defaults.phenotype.cycle.data.transition_rate(cycle_start_index,cycle_end_index) = 0.0;
 
-	int oxygen_ID = microenvironment.find_density_index( "oxygen" ); // 0
+	// cell_defaults.parameters.o2_proliferation_saturation = 38.0;  
+	// cell_defaults.parameters.o2_proliferation_saturation = 30.0;  
+	// cell_defaults.parameters.o2_reference = 38.0; 
+
+	// int oxygen_ID = microenvironment.find_density_index( "oxygen" ); // 0
 	int inhibitor_ID = microenvironment.find_density_index( "inhibitor" ); // 1
-	std::cout << "----- create_cell_types: oxygen_ID, inhibitor_ID =" << oxygen_ID << ", "<<inhibitor_ID <<std::endl;
+	// std::cout << "----- create_cell_types: oxygen_ID, inhibitor_ID =" << oxygen_ID << ", "<<inhibitor_ID <<std::endl;
+	std::cout << "----- create_cell_types: inhibitor_ID =" << inhibitor_ID <<std::endl;
 
 
-	cell_defaults.phenotype.secretion.secretion_rates[oxygen_ID] = 10;
-	cell_defaults.phenotype.secretion.uptake_rates[oxygen_ID] = 0;
+
+	// cell_defaults.phenotype.secretion.secretion_rates[oxygen_ID] = 0;
+	// cell_defaults.phenotype.secretion.uptake_rates[oxygen_ID] = 1000;
 	// cell_defaults.phenotype.secretion.saturation_densities[oxygen_ID] = 38;
-	cell_defaults.phenotype.secretion.saturation_densities[oxygen_ID] = 10;
+
+	// cell_defaults.phenotype.secretion.saturation_densities[oxygen_ID] = 38;
 
 // Move these down *after* they are created/copied from cell_defaults
 	// dividing_cell.phenotype.secretion.secretion_rates[inhibitor_ID] = 0;
@@ -130,28 +137,43 @@ void create_cell_types( void )
 	dividing_cell.phenotype.motility.is_motile = true;
 	dividing_cell.phenotype.differentiation.differentiation_possible = true;
 
-	std::vector<double> probabilities;
-	probabilities.push_back(0);
-	probabilities.push_back(1);
-	probabilities.push_back(0);
-	dividing_cell.phenotype.differentiation.probabilities = probabilities;
-	dividing_cell.functions.update_phenotype = custom_probability_update;
+	// dividing_cell.phenotype.secretion.secretion_rates[inhibitor_ID] = parameters.doubles("dividing_cell_inhibitor_secretion");
+	// dividing_cell.phenotype.secretion.uptake_rates[inhibitor_ID] = parameters.doubles("dividing_cell_inhibitor_uptake");
 
-	std::vector<Differentiation_Outcome> outcomes;
-	Differentiation_Outcome* symmetric_0 = new Differentiation_Outcome(&dividing_cell, &dividing_cell);
-	Differentiation_Outcome* asymmetric_0 = new Differentiation_Outcome(&dividing_cell, &differentiated_cell);
-	Differentiation_Outcome* symmetricD_0 = new Differentiation_Outcome(&differentiated_cell, &differentiated_cell);
-	outcomes.push_back(*symmetric_0);
-	outcomes.push_back(*asymmetric_0);
-	outcomes.push_back(*symmetricD_0);
-	dividing_cell.phenotype.differentiation.outcomes = outcomes;
+	//Furkan
+//	int glucose_substrate_index = microenvironment.find_density_index( "inhibitor" );
+    // cell_defaults.phenotype.secretion.uptake_rates[inhibitor_ID] =0.0;
+    // cell_defaults.phenotype.secretion.secretion_rates[inhibitor_ID] = 0.1;
+    // cell_defaults.phenotype.secretion.saturation_densities[inhibitor_ID] = 100.0;
+    dividing_cell.phenotype.secretion.uptake_rates[inhibitor_ID] =0.0;
+    dividing_cell.phenotype.secretion.secretion_rates[inhibitor_ID] = 0.1;
+    dividing_cell.phenotype.secretion.saturation_densities[inhibitor_ID] = 100.0;
+
+	dividing_cell.functions.update_phenotype = dividing_cell_phenotype_rule; 
+
+	// dividing_cell.functions.update_velocity = dividing_cell_velocity_rule; 
+
+	// dividing_cell.functions.custom_cell_rule = cargo_cell_rule; 
+	// dividing_cell.functions.update_migration_bias = NULL;	
+
+	// dividing_cell.phenotype.secretion.secretion_rates[oxygen_ID] = 0;
+	// dividing_cell.phenotype.secretion.uptake_rates[oxygen_ID] = 10;
+	// dividing_cell.phenotype.secretion.saturation_densities[oxygen_ID] = 38;
 
 	// --- differentiated cells
 	differentiated_cell = cell_defaults;
 	differentiated_cell.type = 1;
 	differentiated_cell.phenotype.motility.is_motile = false;
 	differentiated_cell.phenotype.differentiation.differentiation_possible = false;
-	differentiated_cell.functions.update_phenotype = custom_probability_update2;
+	// differentiated_cell.functions.update_phenotype = nondividing_probability_update;
+	differentiated_cell.functions.update_phenotype = nondividing_cell_phenotype_rule; 
+
+
+	// no birth  (turn off proliferation)
+	// int cycle_start_index = live.find_phase_index( PhysiCell_constants::live ); 
+	// int cycle_end_index = live.find_phase_index( PhysiCell_constants::live ); 
+	differentiated_cell.phenotype.cycle.data.transition_rate( cycle_start_index , cycle_end_index ) = 0.0; 
+
 
 
 	// rwh: now set secretion and uptake rates - get them from the config file (e.g., config/PhysiCell_settings.xml)
@@ -159,10 +181,8 @@ void create_cell_types( void )
 	// "non-dividing cells create some sort of inhibitor molecule and subsequently secrete this molecule. 
 	// Then, the dividing cells would uptake this inhibitor and the probability that these dividing cells differentiate 
 	// into non-dividing cells would vary with the concentration/absolute number of “inhibitor” molecules consumed.
-	dividing_cell.phenotype.secretion.secretion_rates[inhibitor_ID] = parameters.doubles("dividing_cell_inhibitor_secretion");
 	differentiated_cell.phenotype.secretion.secretion_rates[inhibitor_ID] = parameters.doubles("differentiated_cell_inhibitor_secretion");
 
-	dividing_cell.phenotype.secretion.uptake_rates[inhibitor_ID] = parameters.doubles("dividing_cell_inhibitor_uptake");
 	differentiated_cell.phenotype.secretion.uptake_rates[inhibitor_ID] = parameters.doubles("differentiated_cell_inhibitor_uptake");
 	// cell_defaults.phenotype.secretion.saturation_densities[inhibitor_ID] = 100;
 	std::cout << "\n------- sanity check inhibitor_ID rates:" <<std::endl;
@@ -173,9 +193,28 @@ void create_cell_types( void )
 	std::cout << "----------------------------\n" <<std::endl;
 
 
+	// Do this AFTER defining the cell types??
+	std::vector<Differentiation_Outcome> outcomes;
+	Differentiation_Outcome* symmetric_0 = new Differentiation_Outcome(&dividing_cell, &dividing_cell);
+	Differentiation_Outcome* asymmetric_0 = new Differentiation_Outcome(&dividing_cell, &differentiated_cell);
+	Differentiation_Outcome* symmetricD_0 = new Differentiation_Outcome(&differentiated_cell, &differentiated_cell);
+	outcomes.push_back(*symmetric_0);
+	outcomes.push_back(*asymmetric_0);
+	outcomes.push_back(*symmetricD_0);
+	dividing_cell.phenotype.differentiation.outcomes = outcomes;
+
+
+	std::vector<double> probabilities;  // pcts, percentages
+	probabilities.push_back(0);
+	probabilities.push_back(1);
+	probabilities.push_back(0);
+
+	// probabilities.push_back(.33);
+	// probabilities.push_back(.34);
+	// probabilities.push_back(.33);
+	dividing_cell.phenotype.differentiation.probabilities = probabilities;
+
 	return;
-
-
 }
 
 void setup_microenvironment( void )
@@ -186,9 +225,6 @@ void setup_microenvironment( void )
 		std::cout << "Warning: overriding XML config option and setting to 2D!" << std::endl;
 		default_microenvironment_options.simulate_2D = true;
 	}
-
-
-
 /*
 	// no gradients need for this example
 	default_microenvironment_options.calculate_gradients = false;
@@ -258,11 +294,14 @@ necrosis rate according to its local oxygenation conditions. (See Section 17.6.)
 
 void setup_tissue( void )
 {
-	Cell* pC;
 
+	Cell* pC;
 	// create a single cell, at the origin
 	pC = create_cell( dividing_cell );
 	pC->assign_position( 0.0, 0.0, 0.0 );
+
+	static int inhibitor_i = microenvironment.find_density_index("inhibitor");
+	pC->phenotype.molecular.internalized_total_substrates[ inhibitor_i ] = 100; 
 
 	// create some cells near the origin
 /*
@@ -289,23 +328,21 @@ std::vector<std::string> my_coloring_function( Cell* pCell )
 {
 	std::vector<std::string> output = false_cell_coloring_cytometry(pCell);
 
-	if(pCell->type == 0 )
+	if(pCell->type == 0 ) //dividing_cell
 	{
 		 output[0] = "green";
+		 output[1] = "green";
 		 output[2] = "green";
-	} else if(pCell->type == 1 ){
+	} else if(pCell->type == 1 ) { //non dividing_cell (differentiated)
 		 output[0] = "red";
+		 output[1] = "red";
 		 output[2] = "red";
-	} else if(pCell->type == 2 ){
-		 output[0] = "blue";
-		 output[2] = "blue";
 	}
-
 	return output;
 }
 
 
-void custom_probability_update(Cell* pCell, Phenotype& phenotype, double dt)
+void dividing_probability_update(Cell* pCell, Phenotype& phenotype, double dt)
 {
 	static int inhibitor_i = microenvironment.find_density_index("inhibitor");
 	double inhibitor_Con = phenotype.molecular.internalized_total_substrates[inhibitor_i];
@@ -313,21 +350,87 @@ void custom_probability_update(Cell* pCell, Phenotype& phenotype, double dt)
 	//phenotype.secretion.advance(pCell, phenotype, dt);
 	double SymR = (8)/(10 + 10*inhibitor_Con);
 	double Asym = 1 - SymR;
+	std::cout << "------- dividing_probability_update: SymR, Asym = "<< SymR << ",  " << Asym << std::endl;
 
 	std::vector<double> probabilities{ SymR, 0 , Asym };
-	phenotype.differentiation.probabilities = probabilities;
-	return;
+	// phenotype.differentiation.probabilities = probabilities;
 
+//	pCell->phenotype.volume *= 1.1; 
+	std::cout << "------- : total vol = "<< pCell->get_total_volume() << std::endl;
+	if (pCell->get_total_volume() > 10000) {
+		// pCell->flag_for_division();
+	}
+	else {
+		// pCell->set_total_volume(1.02 * pCell->get_total_volume());
+	}
+	return;
 }
 
-void custom_probability_update2(Cell* pCell, Phenotype& phenotype, double dt)
+void nondividing_probability_update(Cell* pCell, Phenotype& phenotype, double dt)
 {
 	static int inhibitor_i = microenvironment.find_density_index("inhibitor");
 	phenotype.molecular.internalized_total_substrates[inhibitor_i] += 1.0;
-  double inhibitor_Con2 = phenotype.molecular.internalized_total_substrates[inhibitor_i];
+
+  	double inhibitor_con2 = phenotype.molecular.internalized_total_substrates[inhibitor_i];
 	//phenotype.secretion.advance(pCell, phenotype, dt);
 	//pCell -> advance_bundled_phenotype_functions( dt);
-	std::cout << inhibitor_Con2 << " ";
+	std::cout << "nondividing_probability_update: inhibitor_con2= " << inhibitor_con2 << " ";
   return;
+}
 
+void nondividing_cell_phenotype_rule( Cell* pCell, Phenotype& phenotype, double dt )
+{
+	static int inhibitor_i = microenvironment.find_density_index( "inhibitor" ); 
+
+	// std::cout << "nondividing_cell_phenotype_rule: cell ID, vol= " << pCell->ID<<", " <<pCell->get_total_volume() << std::endl;
+  	// double inhibitor_con2 = phenotype.molecular.internalized_total_substrates[inhibitor_i];
+	// std::cout << "					: inhibitor_con2= " << inhibitor_con2 << " ";
+
+
+	// std::cout << "------- : total vol = "<< pCell->get_total_volume() << std::endl;
+	// pCell->set_total_volume(1.05 * pCell->get_total_volume());
+	// if (pCell->get_total_volume() > 5000) {
+	// 	pCell->flag_for_division();
+	// }
+
+	// if inhibitor high, secrete nothing, receptor off 
+	// if( pCell->nearest_density_vector()[inhibitor_i] > pCell->custom_data[drop_index] )
+	// {
+	// 	phenotype.secretion.secretion_rates[inhibitor_i] = 0.0; 
+	// 	// pCell->custom_data[receptor_index] = 0.0; 
+	// }
+	// else
+	// {
+	// 	phenotype.secretion.secretion_rates[inhibitor_i] = 0.0; 
+	// 	// pCell->custom_data[receptor_index] = 0.0; 		
+	// }
+	
+	return; 
+}
+
+void dividing_cell_phenotype_rule( Cell* pCell, Phenotype& phenotype, double dt )
+{
+	static int inhibitor_i = microenvironment.find_density_index( "inhibitor" ); 
+
+	std::cout << "dividing_cell_phenotype_rule: cell ID, vol= " << pCell->ID<<", " <<pCell->get_total_volume() << std::endl;
+	// std::cout << "------- : total vol = "<< pCell->get_total_volume() << std::endl;
+	pCell->set_total_volume(1.05 * pCell->get_total_volume());
+	if (pCell->get_total_volume() > 5000) {
+		std::cout << "         -- flag_for_division(): \n";
+		pCell->flag_for_division();
+	}
+
+	// if inhibitor high, secrete nothing, receptor off 
+	// if( pCell->nearest_density_vector()[inhibitor_i] > pCell->custom_data[drop_index] )
+	// {
+	// 	phenotype.secretion.secretion_rates[inhibitor_i] = 0.0; 
+	// 	// pCell->custom_data[receptor_index] = 0.0; 
+	// }
+	// else
+	// {
+	// 	phenotype.secretion.secretion_rates[inhibitor_i] = 0.0; 
+	// 	// pCell->custom_data[receptor_index] = 0.0; 		
+	// }
+	
+	return; 
 }

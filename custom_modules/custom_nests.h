@@ -78,8 +78,12 @@ void tumor_cell_phenotype_with_oncoprotein( Cell* pCell, Phenotype& phenotype, d
 extern Cell_Definition motile_cell;
 
 // custom cell phenotype functions could go here
-void custom_probability_update(Cell* pCell, Phenotype& phenotype, double dt);
-void custom_probability_update2(Cell* pCell, Phenotype& phenotype, double dt);
+void dividing_probability_update(Cell* pCell, Phenotype& phenotype, double dt);
+void nondividing_probability_update(Cell* pCell, Phenotype& phenotype, double dt);
+
+void dividing_cell_phenotype_rule(Cell* pCell, Phenotype& phenotype, double dt);
+void nondividing_cell_phenotype_rule(Cell* pCell, Phenotype& phenotype, double dt);
+
 // setup functions to help us along
 
 void create_cell_types( void );
