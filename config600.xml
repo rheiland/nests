@@ -115,12 +115,12 @@
 	</save>
 
 	<microenvironment_setup>
-		<variable name="inhibitor" units="mmHg" ID="0">
+		<variable name="inhibitor" units="dimensionless" ID="0">
 			<physical_parameter_set>
 				<diffusion_coefficient units="micron^2/min">10.0</diffusion_coefficient>
 				<decay_rate units="1/min">0.0</decay_rate>
 			</physical_parameter_set>
-			<initial_condition units="mmHg">0.0</initial_condition>
+			<initial_condition units="mmHg">200.0</initial_condition>
 			<Dirichlet_boundary_condition units="mmHg" enabled="false">0.0</Dirichlet_boundary_condition>
 		</variable>
 
@@ -133,22 +133,15 @@
 
 	<user_parameters>
 		<random_seed type="int" units="dimensionless">0</random_seed>
-		<!-- example parameters from the template -->
 
-		<!-- motile cell type parameters -->
-		<motile_cell_persistence_time type="double" units="min">15</motile_cell_persistence_time>
-		<motile_cell_migration_speed type="double" units="micron/min">0.5</motile_cell_migration_speed>
-		<motile_cell_relative_adhesion type="double" units="dimensionless">0.05</motile_cell_relative_adhesion>
-		<motile_cell_apoptosis_rate type="double" units="1/min">0.0</motile_cell_apoptosis_rate>
-		<motile_cell_relative_cycle_entry_rate type="double" units="dimensionless">0.0</motile_cell_relative_cycle_entry_rate>
-
-		<!-- Dividing cell type parameters -->
-		<dividing_cell_inhibitor_uptake type="double" units="dimensionless">100.0</dividing_cell_inhibitor_uptake>
+		<!-- Dividing cells:  uptake the inhibitor -->
+		<dividing_cell_inhibitor_uptake type="double" units="dimensionless">71.0</dividing_cell_inhibitor_uptake>
 		<dividing_cell_inhibitor_secretion type="double" units="dimensionless">0.0</dividing_cell_inhibitor_secretion>
+		<dividing_cell_saturation_densities type="double" units="dimensionless">301.0</dividing_cell_saturation_densities>
 
-		<!-- Differentiated cell type parameters -->
+		<!-- Differentiated cells: secrete the inhibitor -->
 		<differentiated_cell_inhibitor_uptake type="double" units="dimensionless">0.0</differentiated_cell_inhibitor_uptake>
-		<differentiated_cell_inhibitor_secretion type="double" units="dimensionless">100.0</differentiated_cell_inhibitor_secretion>
+		<differentiated_cell_inhibitor_secretion type="double" units="dimensionless">101.0</differentiated_cell_inhibitor_secretion>
 	</user_parameters>
 
 
